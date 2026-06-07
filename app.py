@@ -7,6 +7,7 @@ from sklearn.preprocessing import PolynomialFeatures
 import ee
 import folium
 from streamlit_folium import st_folium
+import json 
 
 # ==============================================================================
 # ALUR PROSES APLIKASI (PROJECT COCONUT VISUALIZER)
@@ -67,13 +68,21 @@ st.markdown("""
 # ==========================================
 # INISIALISASI GEE & ML MODEL
 # ==========================================
+
 @st.cache_resource
 def init_gee():
     try:
-        ee.Initialize(project='obi-project-495300')
+        # Mengambil kunci rahasia dari Streamlit Secrets
+        key_dict = json.loads(st.secrets["EE_KEYS"])
+        
+        # Membuat kredensial khusus mesin (Service Account)
+        credentials = ee.ServiceAccountCredentials(key_dict['client_email'], key_data=key_dict)
+        
+        # Inisialisasi GEE dengan kredensial tersebut
+        ee.Initialize(credentials, project='obi-project-495300')
+        print("GEE Berhasil Diinisialisasi di Cloud!")
     except Exception as e:
-        ee.Authenticate()
-        ee.Initialize(project='obi-project-495300')
+        st.error(f"Gagal menghubungkan ke Google Earth Engine: {e}")
 
 init_gee()
 
