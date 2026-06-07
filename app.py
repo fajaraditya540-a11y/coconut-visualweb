@@ -8,6 +8,7 @@ import ee
 import folium
 from streamlit_folium import st_folium
 import json 
+from google.oauth2 import service_account 
 
 # ==============================================================================
 # ALUR PROSES APLIKASI (PROJECT COCONUT VISUALIZER)
@@ -72,17 +73,20 @@ st.markdown("""
 @st.cache_resource
 def init_gee():
     try:
-        # Mengambil kunci rahasia dari Streamlit Secrets
+        # 1. Tarik data JSON dari brankas Streamlit Secrets
         key_dict = json.loads(st.secrets["EE_KEYS"])
         
-        # Membuat kredensial khusus mesin (Service Account)
-        credentials = ee.ServiceAccountCredentials(key_dict['client_email'], key_data=key_dict)
+        # 2. Buat Kredensial pakai metode modern Google OAuth2
+        credentials = service_account.Credentials.from_service_account_info(key_dict)
         
-        # Inisialisasi GEE dengan kredensial tersebut
+        # 3. Inisialisasi GEE dengan kredensial tersebut
         ee.Initialize(credentials, project='obi-project-495300')
         print("GEE Berhasil Diinisialisasi di Cloud!")
+        
     except Exception as e:
-        st.error(f"Gagal menghubungkan ke Google Earth Engine: {e}")
+        # Jika gagal, tampilkan pesan aslinya di layar aplikasi dan STOP kodingan
+        st.error(f"🚨 GAGAL INISIALISASI GEE. Pesan Error Asli: {e}")
+        st.stop() # Menghentikan script agar tidak lanjut ke baris 461
 
 init_gee()
 
