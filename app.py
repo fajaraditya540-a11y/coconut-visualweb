@@ -73,20 +73,28 @@ st.markdown("""
 @st.cache_resource
 def init_gee():
     try:
-        # 1. Tarik data JSON dari brankas Streamlit Secrets
+        # 1. Ambil data JSON dari secrets
         key_dict = json.loads(st.secrets["EE_KEYS"])
         
-        # 2. Buat Kredensial pakai metode modern Google OAuth2
-        credentials = service_account.Credentials.from_service_account_info(key_dict)
+        # 2. Definisikan SCOPE yang benar untuk Earth Engine
+        # Scope ini memberi izin kepada Service Account untuk membaca data Earth Engine
+        SCOPES = [
+            'https://www.googleapis.com/auth/earthengine',
+            'https://www.googleapis.com/auth/devstorage.read_only'
+        ]
         
-        # 3. Inisialisasi GEE dengan kredensial tersebut
+        # 3. Buat kredensial dengan scope spesifik
+        credentials = service_account.Credentials.from_service_account_info(
+            key_dict, scopes=SCOPES
+        )
+        
+        # 4. Inisialisasi dengan kredensial yang sudah memiliki izin scope
         ee.Initialize(credentials, project='obi-project-495300')
-        print("GEE Berhasil Diinisialisasi di Cloud!")
+        print("GEE Berhasil Diinisialisasi dengan Scope yang Benar!")
         
     except Exception as e:
-        # Jika gagal, tampilkan pesan aslinya di layar aplikasi dan STOP kodingan
         st.error(f"🚨 GAGAL INISIALISASI GEE. Pesan Error Asli: {e}")
-        st.stop() # Menghentikan script agar tidak lanjut ke baris 461
+        st.stop()
 
 init_gee()
 
