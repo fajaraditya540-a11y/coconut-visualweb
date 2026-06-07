@@ -99,15 +99,19 @@ def init_gee():
 init_gee()
 
 def add_ee_layer(m, ee_image_object, vis_params, name, opacity=1.0):
-    map_id_dict = ee.Image(ee_image_object).getMapId(vis_params)
-    folium.raster_layers.TileLayer(
-        tiles=map_id_dict['tile_fetcher'].url_format,
-        attr='Google Earth Engine',
-        name=name,
-        overlay=True,
-        control=True,
-        opacity=opacity # Parameter ini yang tadi dicari oleh Python!
-    ).add_to(m)
+    try:
+        # Tambahkan .getInfo() atau .getMapId() secara eksplisit setelah memastikan objek adalah Image
+        map_id_dict = ee.Image(ee_image_object).getMapId(vis_params)
+        folium.raster_layers.TileLayer(
+            tiles=map_id_dict['tile_fetcher'].url_format,
+            attr='Google Earth Engine',
+            name=name,
+            overlay=True,
+            control=True,
+            opacity=opacity
+        ).add_to(m)
+    except Exception as e:
+        st.warning(f"Layer '{name}' gagal dimuat: {e}")
 
 # ==========================================
 # STATE MANAGEMENT (SKENARIO INTERAKTIF)
